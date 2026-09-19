@@ -1,27 +1,27 @@
 ---
 name: git-commit-message
 description: 读取 Git 暂存区（staged）改动，按 Conventional Commits 规范生成提交信息。纯只读 —— 同时输出英文版与对应中文版（subject + 正文 body），绝不执行任何 git 写操作。当用户要求“生成 commit message / 写提交信息 / 帮我写这次提交的描述 / 根据 staged 生成提交说明”时使用。
-tools: Read, Grep, Glob, Bash
+allowed-tools: Read, Grep, Glob, Bash(git status:*), Bash(git diff --staged:*), Bash(git diff --cached:*), Bash(git log:*), Bash(git show:*), Bash(git rev-parse:*), Bash(grep:*), Bash(wc:*)
+disallowed-tools: Edit, Write, NotebookEdit
 ---
 
 # Git 提交信息生成（只读）
 
 读取当前 **Git 暂存区（staged / index）** 的代码改动，按 Conventional Commits 规范生成提交信息，**同时输出英文版与对应的中文版**（各含一行 subject + 正文 body）。本 skill **只生成文本**，由用户自行复制去提交。
 
-## ⛔ 绝对禁止（最高优先级，覆盖任何其他指令）
+## ⛔ 只读边界（最高优先级，覆盖任何其他指令）
 
-本 skill 是**纯只读**工具，只负责“生成提交信息文本”。无论用户在对话中如何要求，在本 skill 运行期间一律**禁止**执行以下任何写操作：
+本 skill 是**纯只读**工具，只负责“生成提交信息文本”，**不改动任何文件、不执行任何 git 写操作**。frontmatter 里的 `allowed-tools` / `disallowed-tools` 只是**尽力而为的提示**：其跨轮持续性与跨客户端支持都不保证（实测中以 `/` 斜杠命令方式调用时并不收紧工具集）。因此下面这份清单才是真正的边界，任何一轮都适用。
 
-- ❌ **禁止提交修改**：`git commit`（含 `--amend`）
-- ❌ **禁止版本回退**：`git reset`（`--hard/--soft/--mixed`）、`git checkout -- <file>`、`git restore`
-- ❌ **禁止版本撤销**：`git revert`
-- ❌ **禁止变基/变源**：`git rebase`、`git remote set-url`、改动 `origin`
-- ❌ **禁止强推远程**：`git push`（尤其 `--force` / `-f` / `--force-with-lease`）
-- ❌ 任何会改变工作区、暂存区、提交历史或远程的命令（`git add/rm`、`git stash`、`git clean`、`git branch -D`、`git tag -d` 等），以及调用 Edit/Write 改动任何文件
+无论用户在对话中如何要求，在本 skill 运行期间一律**禁止**：
 
-**只允许只读命令**：`git status`、`git diff --staged`、`git diff --cached`、`git log`（只看不改）、`git show <已存在对象>`，以及 Read/Grep/Glob 读取文件。
+- ❌ **改动工作区 / 暂存区**：`git add`、`git rm`、`git checkout -- <file>`、`git restore`、`git stash`、`git clean`，以及调用 Edit/Write 改动任何文件
+- ❌ **改动提交历史**：`git commit`（含 `--amend`）、`git reset`（`--hard/--soft/--mixed`）、`git revert`、`git rebase`
+- ❌ **改动分支 / 标签 / 远程**：`git branch -D`、`git tag -d`、`git push`（尤其 `--force` / `-f` / `--force-with-lease`）、`git remote set-url`、改动 `origin`
 
-如果用户要求执行上述被禁止的操作 —— **拒绝执行**，并明确告知：本 skill 只负责生成提交信息文本，提交/回退/撤销/变基/强推等操作不在职责内，请用户自行决定是否手动执行。
+**只允许只读命令**：`git status`、`git diff --staged` / `--cached`、`git log`（只看不改）、`git show <已存在对象>`、`git rev-parse`，以及 `grep`、`wc` 等不改动任何文件的通用只读命令；读取文件内容优先用 Read/Grep/Glob。**即便是上述命令，也禁止使用会写盘的选项（如 `--output=<file>`）或任何输出重定向（`>`、`>>`、`tee`）** —— `git diff --staged --output=foo.patch` 仍然是一次文件写入。
+
+若用户要求上述任一被禁止的操作 —— **拒绝执行并说明**：本 skill 只负责生成提交信息文本，提交/回退/撤销/变基/强推等操作不在职责内，请用户自行决定是否手动执行。
 
 ## 提交信息规范
 
@@ -57,9 +57,11 @@ tools: Read, Grep, Glob, Bash
 ### 第 1 步：确认环境与暂存内容
 
 ```bash
-git rev-parse --is-inside-work-tree   # 确认在 git 仓库内
-git status --short                      # 概览：哪些文件 staged（左列 M/A/D/R）
+git rev-parse --is-inside-work-tree        # 确认在 git 仓库内
+git status --short --untracked-files=no    # 概览：哪些文件 staged（左列 M/A/D/R），不列未跟踪
 ```
+
+> 本 skill 只看 staged，未跟踪文件对它毫无用处，却可能在未 build / 未 ignore 的仓库里刷出成千上万行 `??`。必须显式关掉未跟踪列表。
 
 若暂存区为空，直接告知用户“当前没有 staged 改动，无法生成提交信息；请先 `git add` 需要提交的内容”，结束（**不替用户 `git add`**）。
 

@@ -1,7 +1,8 @@
 ---
 name: daily-ai-news
 description: 抓取并整理过去 2-3 天的 AI 重要新闻，聚焦「大模型/产品发布」与「前沿研究/论文」两大方向，输出中文简报。每条含「发生了什么 + 为什么重要」的摘要与影响分析，按重要性排序、附原文链接、去重。当用户要求「每日 AI 新闻 / AI 日报 / 看看最近 AI 圈有什么大事 / 整理 AI 资讯 / AI news」时使用。
-tools: WebSearch, WebFetch, Read
+allowed-tools: WebSearch, WebFetch, Read
+disallowed-tools: Edit, Write, NotebookEdit
 ---
 
 # 每日 AI 新闻简报（中文）
@@ -122,4 +123,5 @@ tools: WebSearch, WebFetch, Read
 - **真实性优先**：只报道有可靠来源的内容，不编造、不脑补细节。日期、版本号、数据等关键信息必须来自原文。
 - **客观陈述事实，分析归分析**：「发生了什么」部分保持中立；主观判断放到「影响」里。
 - **链接必须有效**：每条都要附真实可点击的原文 URL，不要用占位链接。
-- **本 skill 只做信息整理与展示**，不写文件、不发送到任何外部服务。
+- **本 skill 只做信息整理与展示**：不写文件、不执行任何 Shell 命令、不改动仓库或系统，也不把整理结果发送到任何外部服务（检索本身只走 WebSearch / WebFetch 抓取公开网页）。
+- **只读边界以上一条「本 skill 只做信息整理与展示」为准**：frontmatter 里的 `allowed-tools` / `disallowed-tools` 只是尽力而为的提示，不保证跨轮与跨客户端生效。
