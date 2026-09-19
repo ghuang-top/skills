@@ -124,4 +124,4 @@ disallowed-tools: Edit, Write, NotebookEdit
 - **客观陈述事实，分析归分析**：「发生了什么」部分保持中立；主观判断放到「影响」里。
 - **链接必须有效**：每条都要附真实可点击的原文 URL，不要用占位链接。
 - **本 skill 只做信息整理与展示**：不写文件、不执行任何 Shell 命令、不改动仓库或系统，也不把整理结果发送到任何外部服务（检索本身只走 WebSearch / WebFetch 抓取公开网页）。
-- **只读边界以上一条「本 skill 只做信息整理与展示」为准**：frontmatter 里的 `allowed-tools` / `disallowed-tools` 只是尽力而为的提示，不保证跨轮与跨客户端生效。
+- **工具权限说明**：`allowed-tools` 只预授权本轮所需的 WebSearch、WebFetch 与 Read，并不会自动禁止其他工具；`disallowed-tools` 会在 Skill 生效期间移除列出的写入工具，但通常在下一条用户消息后解除。本节正文用于明确持续的行为要求；若需要跨轮强制限制，应另外配置客户端权限 deny 规则或 hook。

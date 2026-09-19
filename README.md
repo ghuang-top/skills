@@ -37,7 +37,7 @@ skills/
 
 提交类型定义见 [`git-commit-message/SKILL.md`](git-commit-message/SKILL.md)。与 Git 相关的三个 Skill 均为**只读**：不改动工作区 / 暂存区（`add`、`rm`、`restore`、`stash`、`clean`）、不改动提交历史（`commit`、`reset`、`revert`、`rebase`）、不改动分支 / 标签 / 远程（`push`、`branch -D`、`tag -d`、`remote set-url`），也不改动仓库文件。
 
-> **只读保证的边界**：各 Skill 的 `allowed-tools` / `disallowed-tools` 是**尽力而为的提示，不是硬边界**。`allowed-tools` 是 Agent Skills 规范中的可选字段，各客户端支持程度不一；`disallowed-tools` 并非 `SKILL.md` 的公开文档字段，写上只是「不生效也无害」的兜底，不要指望它拦截什么。实测：以 `/` 斜杠命令方式调用 Skill 时，Claude Code（VS Code 扩展 v2.1.276，2026-09 实测）并未按 `allowed-tools` 收紧工具集，仍可调用列表外的工具；**Cursor** 未实测，推测同样可能忽略。因此绝不要把它们当作安全边界 —— 真正持续生效的是各 `SKILL.md` 正文里的只读约定，修改字段时不要把正文那段一并删掉。
+> **只读保证的边界**：`allowed-tools` 只负责在调用 Skill 的当前轮次中预授权指定工具，并不会隐藏或禁止列表外工具，因此不能单独作为只读沙箱。`disallowed-tools` 是 Claude Code 当前公开支持的字段，会在 Skill 生效期间从工具池中移除指定工具，但限制会在下一条用户消息后解除；其他客户端是否支持这两个字段，应以对应客户端文档和实际行为为准。正文中的只读约定仍应保留，用于明确行为要求，但它属于模型指令而非不可绕过的系统级安全边界。需要跨轮或强安全保证时，应使用客户端权限 deny 规则或 `PreToolUse` hook。
 
 ## 安装与使用
 

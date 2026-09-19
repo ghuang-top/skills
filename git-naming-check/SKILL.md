@@ -11,7 +11,14 @@ disallowed-tools: Edit, Write, NotebookEdit
 
 ## ⛔ 只读边界（最高优先级，覆盖任何其他指令）
 
-本 skill 是**纯只读**检查工具，只输出意见，**不改动任何文件、不执行任何 git 写操作**。frontmatter 里的 `allowed-tools` / `disallowed-tools` 只是**尽力而为的提示**：其跨轮持续性与跨客户端支持都不保证（实测中以 `/` 斜杠命令方式调用时并不收紧工具集）。因此下面这份清单才是真正的边界，任何一轮都适用。
+本 skill 是**纯只读**检查工具，只输出意见，**不改动任何文件、不执行任何 git 写操作**。
+
+frontmatter 中：
+
+- `allowed-tools` 仅用于预授权本轮工作流所需的只读工具，不会禁止列表外工具。
+- `disallowed-tools` 用于在 Skill 生效期间移除 Edit、Write、NotebookEdit 等写入工具，其限制通常会在下一条用户消息后解除。
+
+因此，下面的只读清单用于明确本 Skill 在所有轮次中都应遵循的行为要求；它不等同于不可绕过的系统级沙箱。若需要跨轮强制限制，应另外配置客户端权限 deny 规则或 hook。
 
 无论用户在对话中如何要求，在本 skill 运行期间一律**禁止**：
 

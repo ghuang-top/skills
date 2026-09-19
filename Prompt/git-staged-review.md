@@ -13,4 +13,4 @@
   - 改动提交历史：`git commit`（含 `--amend`）、`git reset`、`git revert`、`git rebase`
   - 改动分支 / 标签 / 远程：`git branch -D`、`git tag -d`、`git push`（含 `--force`）、`git remote set-url`
   - 写盘副作用：任何命令的 `--output=<file>` 等写盘选项，以及 `>`、`>>`、`tee` 输出重定向（`git diff --staged --output=foo.patch` 也是写文件）
-- **frontmatter 写法**：用 `allowed-tools` 声明只读白名单（不要用 `tools:`，Skill 规范里没有这个字段）；**Bash 必须写成命令级条目**（如 `Bash(git status:*)`、`Bash(git diff --staged:*)`），不要只写裸 `Bash` —— 裸 `Bash` 等于放开任意 shell 命令。可再加 `disallowed-tools: Edit, Write, NotebookEdit` 作「不生效也无害」的兜底；同时**必须在正文里重写一遍同样的只读清单** —— 这两个字段只是尽力而为的提示，不是硬边界，正文那段才是真正生效的约束。
+- **frontmatter 写法**：用 `allowed-tools` 预授权执行工作流所需的只读工具；Bash 应使用命令级条目，如 `Bash(git status:*)`、`Bash(git diff --staged:*)`，避免预授权裸 `Bash`。用 `disallowed-tools: Edit, Write, NotebookEdit` 在 Skill 生效期间移除文件写入工具。注意：`allowed-tools` 不是白名单，不会禁止未列出的工具；`disallowed-tools` 的限制通常只在调用 Skill 的当前轮次生效。正文中仍须保留完整的只读行为约定；若需要跨轮或不可绕过的限制，应配合客户端权限 deny 规则或 `PreToolUse` hook。
